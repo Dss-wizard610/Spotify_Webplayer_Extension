@@ -1,11 +1,17 @@
-document.getElementById("loginBtn").addEventListener("click", () => {
-  chrome.runtime.sendMessage({ type: "login" }, (response) => {
-    if (response?.token) {
-      console.log("Access Token:", response.token);
-      alert("Logged in!");
-      // You can now use this token to make Spotify Web API calls
-    } else {
-      alert("Spotify login failed.");
-    }
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  const loginBtn = document.getElementById("loginBtn");
+
+  if (loginBtn) {
+    loginBtn.addEventListener("click", () => {
+      chrome.runtime.sendMessage({ type: "login" }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error("Error sending message:", chrome.runtime.lastError.message);
+        } else if (response && response.success) {
+          alert("Logged in! Token: " + response.token);
+        } else {
+          alert("Login failed: " + (response?.error || "Unknown error"));
+        }
+      });
+    });
+  }
 });
