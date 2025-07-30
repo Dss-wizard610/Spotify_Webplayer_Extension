@@ -5,15 +5,11 @@
   "description": "Chrome Extension with Spotify OAuth",
   "permissions": ["identity"],
   "host_permissions": [
-    "https://accounts.spotify.com/"
+    "https://accounts.spotify.com/",
+    "https://fmelfgjgejloekpelcaedkcckjlahhbi.chromiumapp.org/"
+
   ],
-  "oauth2": {
-    "client_id": "f238e78051674b70910026fe7b299299",
-    "scopes": [
-      "user-read-private",
-      "user-read-email"
-    ]
-  },
+  
   "background": {
     "service_worker": "background.js"
   },

@@ -4,7 +4,7 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "login") {
-    const clientId = "f238e78051674b70910026fe7b299299";
+    const clientId = "f6bd05aa3328406c958040912ed82fe1";
     const redirectUri = chrome.identity.getRedirectURL();
     const scopes = [
       "user-read-private",
