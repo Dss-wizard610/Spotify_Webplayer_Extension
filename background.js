@@ -1,41 +1,49 @@
-const CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID';
-const REDIRECT_URI = chrome.identity.getRedirectURL("callback");
-const SCOPES = [
-  "user-read-playback-state",
-  "user-modify-playback-state",
-  "playlist-modify-public",
-  "playlist-read-private"
-].join(" ");
+chrome.runtime.onInstalled.addListener(() => {
+  console.log("Spotify Extension installed");
+});
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "login") {
+    const clientId = "f238e78051674b70910026fe7b299299";
+    const redirectUri = chrome.identity.getRedirectURL();
+    const scopes = [
+      "user-read-private",
+      "user-read-email"
+    ];
     const authUrl = `https://accounts.spotify.com/authorize?` +
-      `client_id=${CLIENT_ID}&` +
-      `response_type=token&` +
-      `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
-      `scope=${encodeURIComponent(SCOPES)}`;
+      `client_id=${clientId}` +
+      `&response_type=token` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&scope=${encodeURIComponent(scopes.join(" "))}`;
 
-    chrome.identity.launchWebAuthFlow({
-      url: authUrl,
-      interactive: true
-    }, (redirectUrl) => {
-      if (chrome.runtime.lastError || !redirectUrl) {
-        console.error("OAuth error:", chrome.runtime.lastError);
-        sendResponse({ error: "Authorization failed" });
-        return;
+    chrome.identity.launchWebAuthFlow(
+      {
+        url: authUrl,
+        interactive: true
+      },
+      function (redirectUrl) {
+        if (chrome.runtime.lastError) {
+          console.error("OAuth error:", chrome.runtime.lastError.message);
+           sendResponse({ success: false, error: chrome.runtime.lastError.message });
+          return;
+        }
+
+        if (redirectUrl) {
+          // Parse access_token from URL fragment
+          const fragment = new URLSearchParams(redirectUrl.split("#")[1]);
+          const accessToken = fragment.get('access_token');
+
+          if (accessToken) {
+            console.log("Access Token retrieved:", accessToken);
+            sendResponse({ success: true, token: accessToken });
+            // You can store or use the token here
+          } else {
+            console.error("Access token not found in redirect URL");
+             sendResponse({ success: false, error: "No access token" });
+          }
+        }
       }
-
-      const tokenMatch = redirectUrl.match(/[#&]access_token=([^&]+)/);
-      const token = tokenMatch ? tokenMatch[1] : null;
-
-      if (token) {
-        console.log("Spotify token:", token);
-        sendResponse({ token });
-      } else {
-        sendResponse({ error: "No token received" });
-      }
-    });
-
-    return true; 
+    );
+    return true;
   }
 });
